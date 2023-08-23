@@ -20,12 +20,20 @@ start_count = 0
 start_ref_list_url = environ['API_URL'] + "reference/get_textpresso_reference_list/"
 start_bib_url = environ['API_URL'] + "reference/get_bib_info/"
 start_pdf_url = environ['API_URL'] + "reference/referencefile/download_file/"
+default_data_path = environ['DATA_PATH']
 
 
-def download_files(mod, pdf_dir, biblio_dir, start_reference_id=None, last_date_updated=None):
+def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, last_date_updated=None):
 
     token = get_authentication_token()    
     headers = generate_headers(token)
+    print(token)
+    print(headers)
+	
+    if pdf_dir is None:
+        pdf_dir = path.join(default_data_path, "pdf/" + mod + "/")
+    if biblio_dir is None:
+        biblio_dir = path.join(default_data_path, "bib/" + mod + "/")
 
     if start_reference_id is None:
         start_reference_id = 0
@@ -129,7 +137,7 @@ def get_data_from_url(url, headers, file_type='json'):
                 content = response.text()
             return content
     except requests.exceptions.RequestException as e:
-        logger.info(f"Error occurred for accessing/retrieving data from {url}: {e}")
+        logger.info(f"Error occurred for accessing/retrieving data from {url}: error={e}")
         return None
 
     
@@ -155,7 +163,8 @@ if __name__ == "__main__":
     
     args = vars(parser.parse_args())
 
-    if not args['mod'] or not args['pdf_dir'] or not args['bib_dir']:
+    if not args['mod']:	
+        print("Example usage: python3 download_pdfs_bib_files.py -m WB")
         print("Example usage: python3 download_pdfs_bib_files.py -m WB -p ./pdfs/ -b ./biblio_files/ -f 0")
         exit()
 

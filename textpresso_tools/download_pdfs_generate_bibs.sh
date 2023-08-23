@@ -4,10 +4,8 @@
 function usage {
     echo "This script downloads articles from tazendra (C. elegans pdfs)."
     echo
-    echo "Usage: $(basename "$0") [-m -p -b -h]"
+    echo "Usage: $(basename "$0") [-m -h]"
     echo "  -m --mod_abbreviation      SGD or WB or other mod"
-    echo "  -p --pdf-dir               directory where raw pdf files will be stored"
-    echo "  -b --bib-dir               directory where bib files will be stored"
     echo "  -h --help                  display help"
     exit 1
 }
@@ -33,12 +31,6 @@ while getopts "m:p:b:h" opt; do
         m)
             mod="$OPTARG"
             ;;
-        p)
-            pdf_dir="$OPTARG"
-            ;;
-        b)
-            bib_dir="$OPTARG"
-            ;;
         h)
             usage
             ;;
@@ -54,16 +46,15 @@ while getopts "m:p:b:h" opt; do
 done
 
 # Check if the required arguments are provided
-if [ -z "$mod" ] || [ -z "$pdf_dir" ] || [ -z "$bib_dir" ]; then
-    echo "Usage: $(basename "$0") -m mod_abbreviation -p pdf_dir -b bib_dir"
+if [ -z "$mod" ]; then
+    echo "Usage: $(basename "$0") -m mod_abbreviation"
     exit 1
 fi
 
 echo "mod = " $mod
-echo "pdf_dir = " $pdf_dir
-echo "bib_dir = " $bib_dir
 
-# PDF_DIR="/data/textpresso/raw_files/pdf"
+# PDF_DIR="/home/ubuntu/data/raw_files/pdf/"
+# BIB_DIR="/home/ubuntu/data/raw_files/bib/"
 # LOCKFILE="/data/textpresso/tmp/01downloadpdfs.lock"
 LOCKFILE="./download_pdfs_generate_bibs.lock"
 
@@ -79,12 +70,10 @@ else
     logfile=$(mktemp)
     echo "logfile = " $logfile    
     echo "Downloading pdfs and generating bib files..."
-    mkdir -p ${pdf_dir}
-    mkdir -p ${bib_dir}
 
     start_program() {
 	local from_reference_id="$1"
-	python3 ./getPdfBiblio/download_pdfs_bib_files.py -m ${mod} -p ${pdf_dir} -b ${bib_dir} -f ${from_reference_id} >& ${logfile}
+	python3 ./getPdfBiblio/download_pdfs_bib_files.py -m ${mod} -f ${from_reference_id} >& ${logfile}
     }
 
     start_program 0
