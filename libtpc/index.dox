@@ -1,0 +1,12 @@
+/*! \mainpage Main Page
+ *
+ * \section intro_sec Introduction
+ *
+ * Textpresso is a C++ library to index scientific papers by their textual content. It exposes functions to convert
+ * papers from pdf or xml formats into CAS files, and functions to store and retrieve documents from an index based on
+ * Lucene search engine.
+ *
+ * The main classes of the library are \ref tpc::index::IndexManager, which contains methods for creating and updating
+ * Textpresso index from CAS files and to search the indexed documents, and \ref tpc::cas::CASManager, to convert pdf
+ * and xml files into CAS files, adding annotations to the documents.
+ */

@@ -1,0 +1,19 @@
+stages:
+- build
+- test
+
+build_job:
+  stage: build
+  script:
+  - mkdir cmake-build-release && cd cmake-build-release
+  - cmake -DCMAKE_BUILD_TYPE=Release ..
+  - make && make install
+
+test_job:
+  stage: test
+  script:
+  - mkdir cmake-build-release && cd cmake-build-release
+  - cmake -DCMAKE_BUILD_TYPE=Release ..
+  - make && make install
+  - export INDEX_PATH=/tmp/textpresso_test/index; export LD_LIBRARY_PATH=/usr/local/lib; ./test_indexmanager
+  - export INDEX_PATH=/tmp/textpresso_test/index; export LD_LIBRARY_PATH=/usr/local/lib; ./test_casmanager
