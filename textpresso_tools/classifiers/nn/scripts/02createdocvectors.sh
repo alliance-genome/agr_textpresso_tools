@@ -1,1 +1,0 @@
-02createcelegansdocvectors.sh
