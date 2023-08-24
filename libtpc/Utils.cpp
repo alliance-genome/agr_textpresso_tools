@@ -63,7 +63,11 @@ string Utils::decompress_gzip(const string& gz_file, const string& tmp_dir) {
     string tpFile = gz_file.substr(lastslash + 1, lastdot - lastslash - 1);
     string tempFile = tmp_dir + "/" + tpFile;
     std::ofstream out(tempFile.c_str());
-    boost::iostreams::copy(in, out);
+    try {
+      boost::iostreams::copy(in, out);
+    } catch (const std::exception &e) {
+      std::cerr << "decompress_gzip Error " << e.what() << std::endl;
+    }
     out.close();
     return tempFile;
 }
@@ -260,7 +264,7 @@ void Utils::write_index_descriptor(const std::string& index_path, const std::str
     output << "         </configurationParameterSettings> " << endl;
     output << " <typeSystemDescription> " << endl;
     output << "         <imports> " << endl;
-    output << "         <import location = \"/usr/local/uima_descriptors/TpLexiconAnnotatorTypeSystem.xml\"/> " << endl;
+    output << "         <import location = \"/usr/local/uima_descriptors/TpLexiconAnnotatorFromPgTypeSystem.xml\"/> " << endl;
     output << "         </imports>" << endl;
     output << " </typeSystemDescription>" << endl;
     output << " <capabilities> " << endl;

@@ -14,11 +14,11 @@
 #include "uima/xmiwriter.hpp"
 
 namespace tpc {
-
     namespace cas {
 
         static const std::string PDF2TPCAS_DESCRIPTOR("/usr/local/uima_descriptors/TpTokenizer.xml");
         static const std::string XML2TPCAS_DESCRIPTOR("/usr/local/uima_descriptors/TxTokenizer.xml");
+        static const std::string TAI2TPCAS_DESCRIPTOR("/usr/local/uima_descriptors/TdTokenizer.xml");
         static const std::string TPCAS1_2_TPCAS2_DESCRIPTOR("/usr/local/uima-descriptors/TpLexiconAnnotatorFromPg.xml");
 
         static const std::vector<std::pair<std::string, std::string>> PMCOA_CAT_REGEX{
@@ -40,7 +40,7 @@ namespace tpc {
         static const std::string CELEGANS_SUP("C. elegans Supplementals");
 
         enum class FileType {
-            pdf = 1, xml = 2
+            pdf = 1, xml = 2, txt = 3, tai = 4
         };
 
         /*!
