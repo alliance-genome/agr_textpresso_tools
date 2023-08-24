@@ -31,9 +31,9 @@ def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, 
     print(headers)
 	
     if pdf_dir is None:
-        pdf_dir = path.join(default_data_path, "pdf/" + mod + "/")
+        pdf_dir = path.join(default_data_path, "pdf/")
     if biblio_dir is None:
-        biblio_dir = path.join(default_data_path, "bib/" + mod + "/")
+        biblio_dir = path.join(default_data_path, "bib/")
 
     if start_reference_id is None:
         start_reference_id = 0
