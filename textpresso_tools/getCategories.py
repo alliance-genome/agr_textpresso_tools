@@ -1,6 +1,7 @@
 import urllib.request
 import json
 import time
+import argparse
 from getPdfBiblio.okta_utils import (
     generate_headers
 )
@@ -15,13 +16,15 @@ from getPdfBiblio.okta_utils import (
 #urllib.request.urlretrieve("http://purl.obolibrary.org/obo/so.obo",downloadLocation)
 #urllib.request.urlretrieve("http://purl.obolibrary.org/obo/wbbt.obo",downloadLocation)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--token', dest='token', type=str, help='A team token from curation site')
+parser.add_argument('--mod', dest='mod', type=str, help='Mod to procoess')
+args = parser.parse_args()
 
-###Paste in user token from A-Team curation site here... needs to be current and cant be the admin token
-##Do not commit tokens!
-token = ''
+token = args.token
 headers = generate_headers(token)
 
-mod='sgd'
+mod = args.mod
 page_limit = 1000
 current_page = 0
 records_printed = 0
@@ -38,7 +41,7 @@ elif mod == 'wb':
 params = {"searchFilters":{"dataProviderFilter":{"dataProvider.sourceOrganization.abbreviation":{"queryString":mod,"tokenOperator":"OR"}}},"sortOrders":[],"aggregations":[],"nonNullFieldsTable":[]}
 
 ##Gene List Generation
-f = open(f"geneList_{mod}.obo", "w")
+f = open(f"gene_list_{mod}.obo", "w")
 f.write("format-version: 1.2\n")
 f.write(f"date: {time}\n")
 f.write("saved-by: Textpresso\n")
@@ -70,7 +73,7 @@ while True:
 f.close()
 
 ##Allele List Generation
-f = open(f"alleleList_{mod}.obo", "w")
+f = open(f"allele_list_{mod}.obo", "w")
 f.write("format-version: 1.2\n")
 f.write(f"date: {time}\n")
 f.write("saved-by: Textpresso\n")
