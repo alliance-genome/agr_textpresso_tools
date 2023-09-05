@@ -2,7 +2,7 @@
 # Build:
 #	docker build -f Dockerfile-cloud -t cloud-tpc .
 #
-FROM ubuntu-tpc-hmm
+FROM ubuntu-tpc
 
 # install libraries and stuff, reconfigure system
 RUN apt-get update; apt-get install -y -qq libfcgi-dev lighttpd sudo gdb pigz rsync postfix libopenblas-dev rsyslog
