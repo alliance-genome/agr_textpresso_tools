@@ -1,0 +1,7 @@
+obofiles4production/*
+oboheaderfiles/*
+postgres/*
+raw_files/*
+textpressoapi_data/*
+tmp/*
+.idea/*
