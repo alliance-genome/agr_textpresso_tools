@@ -29,11 +29,17 @@ def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, 
     headers = generate_headers(token)
     print(token)
     print(headers)
-	
+
+    organism = get_organism_name_by_mod(mod)
     if pdf_dir is None:
-        pdf_dir = path.join(default_data_path, "pdf/")
+        pdf_dir = path.join(default_data_path, "pdf/'" + organism + "'/")
     if biblio_dir is None:
-        biblio_dir = path.join(default_data_path, "bib/")
+        biblio_dir = path.join(default_data_path, "bib/'" + organism + "'/")
+
+    print(pdf_dir)
+    print(biblio_dir)
+
+    return
 
     if start_reference_id is None:
         start_reference_id = 0
@@ -72,7 +78,7 @@ def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, 
                     if isinstance(biblioTxt, str):
                         break
             if isinstance(biblioTxt, str):
-                bib_filename = set_file_name(biblio_dir, ref_curie, "txt")
+                bib_filename = set_file_name(biblio_dir, ref_curie, "bib")
                 with open(bib_filename, "w") as bib_file:
                     bib_file.write(biblioTxt)
             else:
@@ -140,7 +146,15 @@ def get_data_from_url(url, headers, file_type='json'):
         logger.info(f"Error occurred for accessing/retrieving data from {url}: error={e}")
         return None
 
-    
+def get_organism_name_by_mod(mod):
+
+    if mod == 'SGD':
+        return "S. cerevisiae"
+    if mod == 'WB':
+        return "C. elegans"
+    ## add more mods here
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
