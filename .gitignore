@@ -6,3 +6,5 @@ textpressoapi_data/*
 tmp/*
 .idea/*
 sasl_passwd*
+tpcas-1/*
+tpcas-2/*
