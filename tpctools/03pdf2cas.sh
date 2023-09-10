@@ -93,7 +93,7 @@ else
 	    do
 	      grep -v -x -f <(sort "/tmp/${folder}.$j.processed" | uniq) "/tmp/${folder}.$j.list" > "/tmp/${folder}.$j.list.tmp"
         mv "/tmp/${folder}.$j.list.tmp" "/tmp/${folder}.$j.list"
-	      if [[ $(wc -l "/tmp/${folder}.$j.list") -gt 0 ]]
+	      if [[ $(cat "/tmp/${folder}.$j.list" | wc -l) -gt 0 ]]
 	      then
 	        articles2cas -i "${PDF_DIR}/${folder}" -l "/tmp/${folder}.$j.list" -t 1 -o "${folder}" -p | grep -o -e "AGRKB:[0-9]*" > "/tmp/${folder}.$j.processed" &
 	      fi
