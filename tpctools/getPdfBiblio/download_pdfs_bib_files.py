@@ -3,6 +3,7 @@ import logging
 import requests
 import json
 import gzip
+from datetime import datetime, timedelta
 from os import environ, path, remove, makedirs
 
 from okta_utils import (
@@ -23,12 +24,12 @@ start_pdf_url = environ['API_URL'] + "reference/referencefile/download_file/"
 default_data_path = environ['DATA_PATH']
 
 
-def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, last_date_updated=None):
+def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, days_ago=None):
 
     token = get_authentication_token()    
     headers = generate_headers(token)
-    print(token)
-    print(headers)
+
+    logger.info(headers)
 
     organism = get_organism_name_by_mod(mod)
     if pdf_dir is None:
@@ -36,15 +37,17 @@ def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, 
     if biblio_dir is None:
         biblio_dir = path.join(default_data_path, "bib/'" + organism + "'/")
 
-    print(pdf_dir)
-    print(biblio_dir)
-
-    return
+    logger.info(pdf_dir)
+    logger.info(biblio_dir)
 
     if start_reference_id is None:
         start_reference_id = 0
     count = start_count
     from_reference_id = start_reference_id
+    last_date_updated = None
+    if days_ago:
+        last_date_updated = get_last_date_updated(days_ago)
+    logger.info(f"last_date_updated={last_date_updated}")
     for index in range(loop_count):
         offset = index * limit
         ref_list_url = f"{start_ref_list_url}{mod}?page_size={limit}&from_reference_id={from_reference_id}"
@@ -103,6 +106,13 @@ def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, 
             from_reference_id = reference_id
     
     logger.info("DONE!")
+
+
+def get_last_date_updated(days_ago):
+    current_date = datetime.now()
+    past_date = current_date - timedelta(days=int(days_ago))
+    last_date_updated = past_date.strftime("%Y-%m-%d")
+    return last_date_updated
 
 
 def set_file_name(data_root_dir, ref_curie, suffix):
@@ -172,8 +182,8 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--from_reference_id', action='store',
 			help='from reference_id for downloading pdfs and generating the biblio files')
 
-    parser.add_argument('-d', '--last_updated_date', action='store',
-                        help='last_updated_date for downloading pdfs and generating the biblio files')
+    parser.add_argument('-d', '--days', action='store',
+                        help='Number of days in the past to filter PDF files, Downloading PDF files added in the past {args.days} days into ABC...')
     
     args = vars(parser.parse_args())
 
@@ -182,5 +192,5 @@ if __name__ == "__main__":
         print("Example usage: python3 download_pdfs_bib_files.py -m WB -p ./pdfs/ -b ./biblio_files/ -f 0")
         exit()
 
-    download_files(args['mod'], args['pdf_dir'], args['bib_dir'], args['from_reference_id'], args['last_updated_date'])
+    download_files(args['mod'], args['pdf_dir'], args['bib_dir'], args['from_reference_id'], args['days'])
 
