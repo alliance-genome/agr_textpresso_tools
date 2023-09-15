@@ -6,10 +6,11 @@ import gzip
 from datetime import datetime, timedelta
 from os import environ, path, remove, makedirs
 
-from okta_utils import (
+from tpctools.utils.okta_utils import (
     get_authentication_token,
     generate_headers
 )
+# from tpctools.utils.email_utils import send_report
 
 logging.basicConfig(format='%(message)s')
 logger = logging.getLogger(__name__)
@@ -33,9 +34,9 @@ def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, 
 
     organism = get_organism_name_by_mod(mod)
     if pdf_dir is None:
-        pdf_dir = path.join(default_data_path, "pdf/'" + organism + "'/")
+        pdf_dir = path.join(default_data_path, "pdf/" + organism + "/")
     if biblio_dir is None:
-        biblio_dir = path.join(default_data_path, "bib/'" + organism + "'/")
+        biblio_dir = path.join(default_data_path, "bib/" + organism + "/")
 
     logger.info(pdf_dir)
     logger.info(biblio_dir)
@@ -56,12 +57,17 @@ def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, 
         data = get_data_from_url(ref_list_url, headers)
         if data is None:
             continue
-
-        logger.info(f"offset={offset} data={len(data)}")
-        
         if len(data) == 0:
             break
+
+        """
+        email_subject = "Textpresso incremental build report"
+        email_message = f"Adding {len(data)} new PDFs" 
+        send_report(email_subject, email_message)
+        """
         
+        logger.info(f"offset={offset} data={len(data)}")
+
         for x in data:
 
             count += 1
@@ -159,9 +165,9 @@ def get_data_from_url(url, headers, file_type='json'):
 def get_organism_name_by_mod(mod):
 
     if mod == 'SGD':
-        return "S. cerevisiae"
+        return "'S. cerevisiae'"
     if mod == 'WB':
-        return "C. elegans"
+        return "'C. elegans'"
     ## add more mods here
 
 
