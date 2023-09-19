@@ -2,30 +2,32 @@ import urllib.request
 import json
 import time
 import argparse
-from getPdfBiblio.okta_utils import (
+from tpctools.getPdfBiblio.okta_utils import (
+    get_authentication_token,
     generate_headers
 )
 
-
-
-##GENERIC ONTOLOGIES
-##downloadLocation = '.'
-#urllib.request.urlretrieve("http://current.geneontology.org/ontology/go-basic.obo",downloadLocation)
-#urllib.request.urlretrieve("http://purl.obolibrary.org/obo/doid.obo",downloadLocation)
-#urllib.request.urlretrieve("http://purl.obolibrary.org/obo/chebi.obo",downloadLocation)
-#urllib.request.urlretrieve("http://purl.obolibrary.org/obo/so.obo",downloadLocation)
-#urllib.request.urlretrieve("http://purl.obolibrary.org/obo/wbbt.obo",downloadLocation)
-
 parser = argparse.ArgumentParser()
-parser.add_argument('--token', dest='token', type=str, help='A team token from curation site')
-parser.add_argument('--mod', dest='mod', type=str, help='Mod to procoess')
+parser.add_argument('--mod', dest='mod', type=str, help='Mod to procoess', required=True)
+parser.add_argument('--page', dest='page_limit', type=str, help='Number of records retrieved at once. Defaults to 1000', required=False)
+parser.add_argument('--all', dest='download_all', action='store_true', help='Download all prebuild ontologies in addition to mod ontologies.', required=False)
 args = parser.parse_args()
 
-token = args.token
-headers = generate_headers(token)
+if args.download_all:
+    urllib.request.urlretrieve("http://current.geneontology.org/ontology/go-basic.obo", "go-basic.obo")
+    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/doid.obo", "doid.obo")
+    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/chebi.obo", "chebi.obo")
+    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/so.obo", "so.obo")
+    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/wbbt.obo", "wbbt.obo")
 
+
+token = get_authentication_token()
+headers = generate_headers(token)
 mod = args.mod
-page_limit = 1000
+if args.page_limit is None:
+    page_limit = 1000
+else:
+    page_limit = args.page_limit
 current_page = 0
 records_printed = 0
 ateam_site = "beta-curation.alliancegenome.org"
@@ -37,6 +39,9 @@ if mod == 'SGD':
 elif mod == 'WB':
     id_prefix = 'ce'
     species_name = "C. elegans"
+else:
+    print("Mod not found... current options for --mod are SGD or WB")
+    quit()
 
 params = {"searchFilters":{"dataProviderFilter":{"dataProvider.sourceOrganization.abbreviation":{"queryString":mod,"tokenOperator":"OR"}}},"sortOrders":[],"aggregations":[],"nonNullFieldsTable":[]}
 
