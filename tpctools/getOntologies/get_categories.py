@@ -2,7 +2,9 @@ import urllib.request
 import json
 import time
 import argparse
-from tpctools.getPdfBiblio.okta_utils import (
+from os import rename
+from get_sgd_specific_categories import create_obo_file
+from tpctools.utils.okta_utils import (
     get_authentication_token,
     generate_headers
 )
@@ -114,3 +116,11 @@ while True:
     current_page += 1
     print(f"Total Allele Records Printed {records_printed} of {resp_obj['totalResults']}")
 f.close()
+
+if mod == 'SGD':
+    create_obo_file('tppsc', 'Protein',
+                    "protein_saccharomyces_cerevisiae.obo")
+    create_obo_file('tpssc', 'Strain',
+                    "strain_saccharomyces_cerevisiae.obo")
+    rename("allele_list_SGD.obo", "allele_saccharomyces_cerevisiae.obo")
+    rename("gene_list_SGD.obo", "gene_saccharomyces_cerevisiae.obo")
