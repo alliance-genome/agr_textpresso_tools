@@ -5,7 +5,13 @@ protein_url = "http://sgd-archive.yeastgenome.org/latest/Yeast_Proteins.txt"
 strain_url = "http://sgd-archive.yeastgenome.org/latest/Yeast_Strains.txt"
 
 
-def create_obo_file(url, id_prefix, data_type, filename):
+def create_obo_file(id_prefix, data_type, filename):
+
+    url = None
+    if data_type == 'Protein':
+        url = protein_url
+    else:
+        url = strain_url
 
     f = open(filename, "w")
 
@@ -52,8 +58,8 @@ def write_header(f, id_prefix, data_type):
 if __name__ == "__main__":
 
 
-    create_obo_file(protein_url, 'tppsc', 'Protein',
+    create_obo_file('tppsc', 'Protein',
                     "protein_saccharomyces_cerevisiae.obo")
     
-    create_obo_file(strain_url, 'tpssc', 'Strain',
+    create_obo_file('tpssc', 'Strain',
                     "strain_saccharomyces_cerevisiae.obo")
