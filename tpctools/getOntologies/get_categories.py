@@ -3,7 +3,7 @@ import json
 import time
 import argparse
 from get_sgd_specific_categories import create_obo_file
-from tpctools.getPdfBiblio.okta_utils import (
+from tpctools.utils.okta_utils import (
     get_authentication_token,
     generate_headers
 )
