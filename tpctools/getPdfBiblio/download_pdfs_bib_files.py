@@ -6,11 +6,8 @@ import gzip
 from datetime import datetime, timedelta
 from os import environ, path, remove, makedirs
 
-from tpctools.utils.okta_utils import (
-    get_authentication_token,
-    generate_headers
-)
-# from tpctools.utils.email_utils import send_report
+from tpctools.utils import okta_utils
+# from ..utils import email_utils
 
 logging.basicConfig(format='%(message)s')
 logger = logging.getLogger(__name__)
@@ -25,18 +22,18 @@ start_pdf_url = environ['API_URL'] + "reference/referencefile/download_file/"
 default_data_path = environ['DATA_PATH']
 
 
-def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, days_ago=None):
+def download_files(mod, raw_file_path=None, days_ago=None, start_reference_id=None):
 
-    token = get_authentication_token()    
-    headers = generate_headers(token)
+    token = okta_utils.get_authentication_token()    
+    headers = okta_utils.generate_headers(token)
 
     logger.info(headers)
 
     organism = get_organism_name_by_mod(mod)
-    if pdf_dir is None:
-        pdf_dir = path.join(default_data_path, "pdf/" + organism + "/")
-    if biblio_dir is None:
-        biblio_dir = path.join(default_data_path, "bib/" + organism + "/")
+    if raw_file_path is None:
+        raw_file_path = default_data_path
+    pdf_dir = path.join(raw_file_path, "pdf/" + organism + "/")
+    biblio_dir = path.join(raw_file_path, "bib/" + organism + "/")
 
     logger.info(pdf_dir)
     logger.info(biblio_dir)
@@ -63,7 +60,7 @@ def download_files(mod, pdf_dir=None, biblio_dir=None, start_reference_id=None, 
         """
         email_subject = "Textpresso incremental build report"
         email_message = f"Adding {len(data)} new PDFs" 
-        send_report(email_subject, email_message)
+        email_utils.send_report(email_subject, email_message)
         """
         
         logger.info(f"offset={offset} data={len(data)}")
@@ -165,9 +162,9 @@ def get_data_from_url(url, headers, file_type='json'):
 def get_organism_name_by_mod(mod):
 
     if mod == 'SGD':
-        return "'S. cerevisiae'"
+        return 'S. cerevisiae'
     if mod == 'WB':
-        return "'C. elegans'"
+        return 'C. elegans'
     ## add more mods here
 
 
@@ -179,24 +176,21 @@ if __name__ == "__main__":
                         help='download pdfs and bib files for MOD',
                         choices=['WB', 'SGD', 'FB', 'ZFIN', 'MGI', 'RGD', 'XB'])
 
-    parser.add_argument('-p', '--pdf_dir', action='store',
-                        help='directory_with_full_path for storing the pdfs')
-
-    parser.add_argument('-b', '--bib_dir', action='store',
-			help='directory_with_full_path for storing the biblio files')
+    parser.add_argument('-p', '--raw_file_path', action='store',
+                        help='directory_with_full_path for storing the pdfs/bib files')
 
     parser.add_argument('-f', '--from_reference_id', action='store',
 			help='from reference_id for downloading pdfs and generating the biblio files')
 
-    parser.add_argument('-d', '--days', action='store',
+    parser.add_argument('-d', '--days_ago', action='store',
                         help='Number of days in the past to filter PDF files, Downloading PDF files added in the past {args.days} days into ABC...')
     
     args = vars(parser.parse_args())
 
     if not args['mod']:	
-        print("Example usage: python3 download_pdfs_bib_files.py -m WB")
-        print("Example usage: python3 download_pdfs_bib_files.py -m WB -p ./pdfs/ -b ./biblio_files/ -f 0")
+        print("Example usage: python3 download_pdfs_bib_files.py -m SGD")
+        print("Example usage: python3 download_pdfs_bib_files.py -m SGD -p /data/textpresso/raw_files/ -d 7 -f 0")
         exit()
 
-    download_files(args['mod'], args['pdf_dir'], args['bib_dir'], args['from_reference_id'], args['days'])
+    download_files(args['mod'], args['raw_file_path'], args['days_ago'], args['from_reference_id'])
 
