@@ -2,6 +2,7 @@ import urllib.request
 import json
 import time
 import argparse
+from os import rename
 from get_sgd_specific_categories import create_obo_file
 from tpctools.utils.okta_utils import (
     get_authentication_token,
@@ -121,3 +122,5 @@ if mod == 'SGD':
                     "protein_saccharomyces_cerevisiae.obo")
     create_obo_file('tpssc', 'Strain',
                     "strain_saccharomyces_cerevisiae.obo")
+    rename("allele_list_SGD.obo", "allele_saccharomyces_cerevisiae.obo")
+    rename("gene_list_SGD.obo", "gene_saccharomyces_cerevisiae.obo")
