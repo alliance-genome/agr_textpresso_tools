@@ -41,11 +41,10 @@ COPY stopwords.postgres.tar.gz /usr/local/textpresso/etc/.
 WORKDIR /
 
 RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && bash Miniconda3-latest-Linux-x86_64.sh -b && rm Miniconda3-latest-Linux-x86_64.sh
+ENV PATH="${PATH}:/root/miniconda3/bin"
 ADD conda_env.yml conda_env.yml
-
 RUN conda env create -f conda_env.yml
 SHELL ["conda", "run", "-n", "agr_textpresso", "/bin/bash", "-c"]
-
 ADD requirements.txt requirements.txt
 RUN conda run -n agr_textpresso pip install -r requirements.txt
 
