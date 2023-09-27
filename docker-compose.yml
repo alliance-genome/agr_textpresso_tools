@@ -25,6 +25,8 @@ services:
         SENDER_PASSWORD: "${SENDER_PASSWORD}"
         REPLY_TO: "${REPLY_TO}"
       hostname: textpresso
+      volumes:
+        - "${TEXTPRESSO_DATA_DIR}:/data/textpresso"
       ports:
         - "80:80"
         - "18080:18080"
