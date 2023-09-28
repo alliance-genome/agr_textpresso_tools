@@ -20,7 +20,7 @@ RUN chfn -f "Textpresso Central" root
 COPY initialize.sh /root/initialize.sh
 COPY start_textpresso.sh /root/run-cloud.sh
 COPY lighttpd.conf /etc/lighttpd/lighttpd.conf
-COPY cron* /usr/local/etc/
+COPY crontab /usr/local/etc/
 
 # Precompile system
 COPY textpressocentral /data/textpresso/textpressocentral
@@ -50,7 +50,7 @@ RUN conda run -n agr_textpresso pip install -r requirements.txt
 
 
 # start cron
-RUN touch /var/log/cron.log && cron
+RUN touch /var/log/cron.log && /bin/bash -c 'declare -p' | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' > /container.env && cron
 
 CMD /root/start_textpresso.sh
 #    RUN:

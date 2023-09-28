@@ -1,2 +1,0 @@
-*/30 * * * * export PATH=$PATH:/usr/local/bin; /usr/local/bin/run_userupload_pipeline_incremental.sh 2>&1 | logger
-01 21 * * *  export PATH=$PATH:/usr/local/bin; /root/run.sh -d 2>&1 | logger
