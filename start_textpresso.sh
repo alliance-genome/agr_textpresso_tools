@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+cron
 mkdir -p /data/textpresso/textpressoapi_data
 mkdir -p /data/textpresso/postgres
 ln -s /usr/local/bin/03pdf2cas.sh /usr/local/bin/tokenize
