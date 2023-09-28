@@ -1,0 +1,16 @@
+tpcas-1/*
+tpcas-2/*
+raw_files/*
+raw_files_new/*
+luceneindex/*
+luceneindex_new/*
+index_output/*
+db*
+tmp/*
+textpressoapi_data/*
+obofiles4production/*
+oboheaderfiles/*
+pgdumps/*
+postgres/*
+tracking/*
+.dockerignore
