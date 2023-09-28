@@ -17,8 +17,8 @@ COPY main.cf /etc/postfix/main.cf
 COPY sasl_passwd /etc/postfix/sasl/sasl_passwd
 RUN postmap /etc/postfix/sasl/sasl_passwd
 RUN chfn -f "Textpresso Central" root
-COPY run.sh /root/run.sh
-COPY run-cloud.sh /root/run-cloud.sh
+COPY initialize.sh /root/initialize.sh
+COPY start_textpresso.sh /root/run-cloud.sh
 COPY lighttpd.conf /etc/lighttpd/lighttpd.conf
 COPY cron* /usr/local/etc/
 
@@ -26,7 +26,7 @@ COPY cron* /usr/local/etc/
 COPY textpressocentral /data/textpresso/textpressocentral
 COPY textpressoapi /data/textpresso/textpressoapi
 COPY tpctools /data/textpresso/tpctools
-RUN /root/run.sh -t \
+RUN /root/initialize.sh -t \
 && rm -rf /data/textpresso/textpressocentral \
 && rm -rf /data/textpresso/textpressoapi \
 && rm -rf /data/textpresso/textpressoapi_data \
@@ -52,7 +52,7 @@ RUN conda run -n agr_textpresso pip install -r requirements.txt
 # start cron
 RUN touch /var/log/cron.log && cron
 
-CMD /root/run-cloud.sh
+CMD /root/start_textpresso.sh
 #    RUN:
 #
 #    see run_tpc_cloud.sh in this directory

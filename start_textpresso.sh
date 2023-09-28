@@ -4,8 +4,8 @@ mkdir -p /data/textpresso/postgres
 ln -s /usr/local/bin/03pdf2cas.sh /usr/local/bin/tokenize
 ln -s /usr/local/bin/07cas1tocas2.sh /usr/local/bin/annotate
 ln -s /usr/local/bin/12index.sh /usr/local/bin/index
-/root/run.sh -p
+/root/initialize.sh -p
 createdb "www-data"; zcat /usr/local/textpresso/etc/stopwords.postgres.tar.gz | pg_restore -d "www-data"
-/root/run.sh -l &
-/root/run.sh -w
-/root/run.sh -i
+/root/initialize.sh -l &
+/root/initialize.sh -w
+/root/initialize.sh -i
