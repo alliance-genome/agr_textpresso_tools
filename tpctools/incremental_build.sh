@@ -4,17 +4,9 @@ raw_file_dir="/data/textpresso/raw_files_new"
 cas1_dir="/data/textpresso/tpcas-1_new"
 cas2_dir="/data/textpresso/tpcas-2_new"
 
-if [ -d "${raw_file_dir}" ]; then
-   mv "${raw_file_dir}" "${raw_file_dir}.old"
-fi
-
-if [ -d "${cas1_dir}" ]; then
-   mv "${cas1_dir}" "${cas1_dir}.old"
-fi   
-
-if [ -d "${cas2_dir}" ]; then
-   mv "${cas2_dir}" "${cas2_dir}.old"
-fi
+rm -rf ${raw_file_dir}
+rm -rf "${cas1_dir}"
+rm -rf "${cas2_dir}"
 
 conda run -n agr_textpresso python3 /data/textpresso/tpctools/getPdfBiblio/download_pdfs_bib_files.py -m "${MOD}" -d 7 -p "${raw_file_dir}"
 
