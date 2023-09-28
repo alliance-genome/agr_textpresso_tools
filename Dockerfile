@@ -18,7 +18,7 @@ COPY sasl_passwd /etc/postfix/sasl/sasl_passwd
 RUN postmap /etc/postfix/sasl/sasl_passwd
 RUN chfn -f "Textpresso Central" root
 COPY initialize.sh /root/initialize.sh
-COPY start_textpresso.sh /root/run-cloud.sh
+COPY start_textpresso.sh /root/start_textpresso.sh
 COPY lighttpd.conf /etc/lighttpd/lighttpd.conf
 COPY crontab /usr/local/etc/
 
