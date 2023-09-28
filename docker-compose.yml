@@ -18,6 +18,7 @@ services:
         PYTHONUNBUFFERED: "${PYTHONUNBUFFERED}"
         TMP_PATH: "${TMP_PATH}"
         DATA_PATH: "${DATA_PATH}"
+        MOD: "${MOD}"
         LOG_PATH: "${LOG_PATH}"
         LOG_URL: "${LOG_URL}"
         CRONTAB_EMAIL: "${CRONTAB_EMAIL}"

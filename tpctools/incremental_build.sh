@@ -4,6 +4,22 @@ raw_file_dir="/data/textpresso/raw_files_new"
 cas1_dir="/data/textpresso/tpcas-1_new"
 cas2_dir="/data/textpresso/tpcas-2_new"
 
+if [ -d "${raw_file_dir}" ]; then
+   mv "${raw_file_dir}" "${raw_file_dir}.old"
+fi
+
+if [ -d "${cas1_dir}" ]; then
+   mv "${cas1_dir}" "${cas1_dir}.old"
+fi   
+
+if [ -d "${cas2_dir}" ]; then
+   mv "${cas2_dir}" "${cas2_dir}.old"
+fi
+
+conda run -n agr_textpresso python3 /data/textpresso/tpctools/getPdfBiblio/download_pdfs_bib_files.py -m "${MOD}" -d 7 -p "${raw_file_dir}"
+
+echo "DONE downloading PDFs and generating bib files!"
+
 check_data.sh -i
 
 echo "DONE running check data for ontology files!"
@@ -28,8 +44,8 @@ rsync -av "${raw_file_dir}/bib/" "${cas2_dir}/"
 
 echo "DONE transferring bib files over to tpcas-2 folder!"
 
-/data/textpresso/tpctools/incremental_index.sh -C ${cas2_dir}
+# /data/textpresso/tpctools/incremental_index.sh -C ${cas2_dir}
 
-echo "DONE indexing!"
+# echo "DONE indexing!"
 
-
+conda run -n agr_textpresso python3 /data/textpresso/tpctools/send_report.py
