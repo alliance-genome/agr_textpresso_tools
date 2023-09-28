@@ -50,7 +50,7 @@ RUN conda run -n agr_textpresso pip install -r requirements.txt
 
 
 # start cron
-RUN touch /var/log/cron.log && /bin/bash -c 'declare -p' | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' > /container.env && cron
+RUN touch /var/log/cron.log && /bin/bash -c 'declare -p' | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' > /container.env && crontab /usr/local/etc/crontab && cron
 
 CMD /root/start_textpresso.sh
 #    RUN:
