@@ -2,9 +2,12 @@ obofiles4production/*
 oboheaderfiles/*
 postgres/*
 raw_files/*
+raw_files*/*
 textpressoapi_data/*
 tmp/*
 .idea/*
 sasl_passwd*
 tpcas-1/*
 tpcas-2/*
+tpcas-1*/*
+tpcas-2*/*
