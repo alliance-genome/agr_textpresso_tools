@@ -1,2 +1,4 @@
+#0 22 * * 1 * conda run -n agr_textpresso python3 /data/textpresso/tpctools/incremental_build.sh >& /tmp/incremental_build.log &
+
 #*/30 * * * * export PATH=$PATH:/usr/local/bin; /usr/local/bin/run_userupload_pipeline_incremental.sh 2>&1 | logger
 #01 21 * * *  export PATH=$PATH:/usr/local/bin; /root/run.sh -d 2>&1 | logger
