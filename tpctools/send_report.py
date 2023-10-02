@@ -1,14 +1,58 @@
 from tpctools.utils import email_utils
 from os import environ
 
-## process logs files here to generate a reasonal report
+logfile = "/tmp/incremental_build.log"
+indexCountFile = "/data/textpresso/luceneindex_new/cc.cfg"
 
-MOD = environ['MOD']
 
-email_subject = f"{MOD} Textpresso Incremental Build Report"
+def send_report():
 
-email_message = "A message about how many new papers have been added in this build and any errors occurred etc etc"
+    MOD = environ['MOD']
+    email_subject = f"{MOD} Textpresso Incremental Build Report"
 
-email_utils.send_report(email_subject, email_message)
+    email_message = compose_message()
 
-exit()
+    email_utils.send_report(email_subject, email_message)
+
+def compose_message():
+
+    f = open(logfile)
+    total_pdf_count = None
+    total_cas1_count = None
+    total_cas2_count = None
+    total_indexed = None
+    empty_cas1_files = None
+    empty_cas1_files = None
+    for line in f:
+        if line.startswith("Total new PDF file(s):"):
+            total_pdf_count = line.strip().replace("Total new PDF file(s):", "")
+        if line.startswith("Total new CAS-1 file(s):"):
+            total_cas1_count = line.strip().replace("Total new CAS-1 file(s):", "")
+        if line.startswith("Empty CAS-1 file(s):"):
+            empty_cas1_files = line.strip().replace("Empty CAS-1 file(s):", "")
+        if line.startswith("Total new CAS-2 file(s):"):
+            total_cas2_count = line.strip().replace("Total new CAS-2 file(s):", "")
+        if line.startswith("Empty CAS-2 file(s):"):
+            empty_cas2_files = line.strip().replace("Empty CAS-2 file(s):", "") 
+    f.close()
+    
+    f = open(indexCountFile)
+    for line in f:
+        pieces = line.strip().split(' ')
+        total_indexed = pieces[-1]
+    rows = ""
+    for (label, count) in [('PDF downloaded', total_pdf_count),
+                           ('CAS-1 files generated', total_cas1_count),
+                           ('Empty CAS-1 files', empty_cas1_files),
+                           ('CAS-2 files generated', total_cas2_count),
+                           ('Empty CAS-2 files', empty_cas2_files),
+                           ('New Papers added into index', total_indexed)]:
+        rows = rows + f"<tr><th style='text-align:left' width='300'>{label}</th><td width='100'>{count}</td></tr>"
+    email_message = "<table></tbody>" + rows + "</tbody></table>"
+    email_message = email_message + "<p>The logfile is available at /tmp/incremental_build.log</p>"
+    return email_message	
+
+
+if __name__ == "__main__":
+    
+    send_report()
