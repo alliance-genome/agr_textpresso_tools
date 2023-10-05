@@ -39,7 +39,8 @@ echo "DONE cas-2 files generation!"
 
 echo -n "Total new CAS-2 file(s): "                                                                                                                               
 find "${cas2_dir}" -maxdepth 3 -name "*.tpcas*" | wc -l 
-
+find "${cas2_dir}" -maxdepth 3 -name "*.tpcas*"
+ 
 echo -n "Empty CAS-2 file(s): "                                                                                                                                    
 find "${cas2_dir}"  -maxdepth 3 -type f -name "*.tpcas.gz" -exec ls -l {} \; | grep " 48 " | wc -l
 
