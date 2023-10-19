@@ -127,19 +127,31 @@ def set_file_name(data_root_dir, ref_curie, suffix):
 
 def get_md5sum_reffile_id(mod, pdffiles):
 
-    # this logic is for mod = 'SGD'
-    # TODO: add logic for mod = 'WB' and other mods
-
     md5sum = None
     referencefile_id = None
-    for x in sorted(pdffiles, key=lambda p: p['date_created']):        
-        if x['source_is_pmc']:
+    prev_date_created = None
+    pmc_md5sum = None
+    pmc_referencefile_id = None
+    for x in sorted(pdffiles, key=lambda p: p['date_created']):
+        if mod == 'SGD':
+            if x['source_is_pmc']:
+                md5sum = x['md5sum']
+                referencefile_id = x['referencefile_id']
+                break
             md5sum = x['md5sum']
             referencefile_id = x['referencefile_id']
-            break
-        md5sum = x['md5sum']
-        referencefile_id = x['referencefile_id']
-            
+        else:
+            if x['source_is_pmc']:
+                pmc_md5sum = md5sum = x['md5sum']
+                pmc_referencefile_id = x['referencefile_id']
+            else:
+                if not md5sum or x['date_created'] > prev_date_created:
+                    md5sum = x['md5sum']
+                    referencefile_id = x['referencefile_id']
+                    prev_date_created =	x['date_created']
+    if not md5sum and pmc_md5sum: 
+        md5sum = pmc_md5sum
+        referencefile_id = pmc_referencefile_id
     return(md5sum, referencefile_id)
 
                     
