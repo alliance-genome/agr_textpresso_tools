@@ -71,7 +71,7 @@ def download_files(mod, raw_file_path=None, days_ago=None, start_reference_id=No
             ref_curie = x['reference_curie']
             reference_id = x['reference_id']
 
-            (md5sum, referencefile_id) = get_md5sum_reffile_id(mod, x['main_referencefiles'])
+            (md5sum, referencefile_id) = get_md5sum_and_id_of_best_reffile_to_download(mod, x['main_referencefiles'])
 
             logger.info(f"{count}: {reference_id} {ref_curie} {md5sum} {referencefile_id}")
 
@@ -125,7 +125,7 @@ def set_file_name(data_root_dir, ref_curie, suffix):
     return path.join(file_path, ref_curie + "." + suffix)
 
 
-def get_md5sum_reffile_id(mod, pdffiles):
+def get_md5sum_and_id_of_best_reffile_to_download(mod, pdffiles):
 
     md5sum = None
     referencefile_id = None
