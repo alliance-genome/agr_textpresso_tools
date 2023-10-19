@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-BODY="/data/textpresso/raw_files/pdf/"
+BODY=$1
+if [[ ${BODY} == "" ]]
+then
+  BODY="/data/textpresso/raw_files"
+fi
 IFS=$'\n'
 #
 

@@ -19,6 +19,9 @@ echo "DONE downloading PDFs and generating bib files!"
 echo -n "Total new PDF file(s): "
 find "${raw_file_dir}/pdf" -maxdepth 3 -name "*.pdf" | wc -l
 
+# convert pdf2txt
+convert_text "${raw_files_new}"
+
 ## generating CAS-1 files
 
 tokenize -P 4 -p "${raw_file_dir}/pdf" -c ${cas1_dir}
@@ -56,4 +59,15 @@ echo "DONE transferring bib files over to tpcas-2 folder!"
 
 echo "DONE indexing!"
 
+# copy files to main dirs
+rsync -av "${raw_file_dir}" "/data/textpresso/raw_files"
+rsync -av "${cas1_dir}" "/data/textpresso/tpcas-1"
+rsync -av "${cas2_dir}" "/data/textpresso/tpcas-2"
+
 conda run -n agr_textpresso python3 /data/textpresso/tpctools/send_report.py
+
+# remove temp files
+rm -rf "${raw_file_dir}"
+rm -rf "${cas1_dir}"
+rm -rf "${cas2_dir}"
+rm -rf "${index_dir}"
