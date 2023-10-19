@@ -60,9 +60,9 @@ echo "DONE transferring bib files over to tpcas-2 folder!"
 echo "DONE indexing!"
 
 # copy files to main dirs
-rsync -av "${raw_file_dir}" "/data/textpresso/raw_files"
-rsync -av "${cas1_dir}" "/data/textpresso/tpcas-1"
-rsync -av "${cas2_dir}" "/data/textpresso/tpcas-2"
+rsync -av "${raw_file_dir}/" "/data/textpresso/raw_files/"
+rsync -av "${cas1_dir}/" "/data/textpresso/tpcas-1/"
+rsync -av "${cas2_dir}/" "/data/textpresso/tpcas-2/"
 
 conda run -n agr_textpresso python3 /data/textpresso/tpctools/send_report.py
 
