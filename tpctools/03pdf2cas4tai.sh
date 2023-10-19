@@ -24,32 +24,32 @@ else
     touch "${LOCKFILE}"
     while [[ $# -gt 0 ]]
     do
-	key=$1
-	
-	case $key in
-	    -p|--pdf-dir)
-		shift
-		PDF_DIR="$1"
-		shift
-		;;
-	    -c|--cas1-dir)
-		shift
-		CAS1_DIR="$1"
-	    shift
-	    ;;
-	    -P|--num-proc)
-		shift
-		N_PROC=$1
-		shift
-		;;
-	    -h|--help)
-		usage
-		;;
-	    *)
-		echo "wrong argument: $key"
-		echo
-		usage
-	esac
+      key=$1
+
+      case $key in
+          -p|--pdf-dir)
+        shift
+        PDF_DIR="$1"
+        shift
+        ;;
+          -c|--cas1-dir)
+        shift
+        CAS1_DIR="$1"
+          shift
+          ;;
+          -P|--num-proc)
+        shift
+        N_PROC=$1
+        shift
+        ;;
+          -h|--help)
+        usage
+        ;;
+          *)
+        echo "wrong argument: $key"
+        echo
+        usage
+      esac
     done
     
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
@@ -61,39 +61,52 @@ else
     # obtain all the folder names in PDF_DIR then create tpcas1 folders for every corpus
     for folder in */ ;
     do
-	mkdir -p "${CAS1_DIR}/${folder}"
+	    mkdir -p "${CAS1_DIR}/${folder}"
     done
-    
+
     # check for newer files in each pdf folder, make processing list
     for folder in *;
     do
-	echo "${folder}"
-	counter=0
-	rm -f /tmp/"${folder}".*.list
-	for i in "${folder}"/*
-	do
-	    if [[ $i -nt "${CAS1_DIR}/$i" ]]
-	    then
-		d=${i#"${folder}"/}
-		bin=$(($counter % $N_PROC))
-		echo $d >> "/tmp/${folder}.$bin.list"
-		counter=$(($counter+1))
-	    fi
-	done
+      echo "${folder}"
+      counter=0
+      rm -f /tmp/"${folder}".*.list
+      rm -f /tmp/"${folder}".*.processed
+      for i in "${folder}"/*
+      do
+          if [[ $i -nt "${CAS1_DIR}/$i" ]]
+          then
+        d=${i#"${folder}"/}
+        bin=$(($counter % $N_PROC))
+        echo $d >> "/tmp/${folder}.${bin}.list"
+        touch "/tmp/${folder}.${bin}.processed"
+        counter=$(($counter+1))
+          fi
+      done
     done
     # run article2cas, with CAS1_DIR as CWD
     IFS=$'\n'
     cd ${CAS1_DIR}
     for folder in *
     do
-	for ((j=0; j<${N_PROC}; j++))
-	do
-	    if [[ -f "/tmp/${folder}.$j.list" ]]
-	    then
-		articles2cas -i "${PDF_DIR}/${folder}" -l "/tmp/${folder}.$j.list" -t 4 -o "${folder}" -p &
-	    fi
-	done
-        (
+      while [[ $(ls -l "${folder}" | wc -l) -lt $(ls -l "${PDF_DIR}/${folder}" | wc -l) ]]
+      do
+          for ((j=0; j<${N_PROC}; j++))
+          do
+            grep -v -x -f <(sort "/tmp/${folder}.$j.processed" | uniq) "/tmp/${folder}.$j.list" > "/tmp/${folder}.$j.list.tmp"
+              mv "/tmp/${folder}.$j.list.tmp" "/tmp/${folder}.$j.list"
+              if [[ $(cat "/tmp/${folder}.$j.list" | wc -l) -gt 0 ]]
+              then
+                  articles2cas -i "${PDF_DIR}/${folder}" -l "/tmp/${folder}.$j.list" -t 4 -o "${folder}" -p | grep -o -e "AGRKB:[0-9]*" > "/tmp/${folder}.$j.processed" &
+              fi
+          done
+          wait
+      done
+      # gzip all tpcas files
+      find "${folder}" -name "*tpcas" -print0 | xargs -0 -n 8 -P 8 pigz 2>/dev/null
+      rm -f /tmp/"${folder}".*.list
+      rm -f /tmp/"${folder}".*.processed
+
+      (
         for ((j=0; j< ${N_PROC}; j++))
         do
             if [[ -f "/tmp/${folder}.$j.list" ]]
@@ -101,19 +114,16 @@ else
                 for k in $(cat "/tmp/${folder}.$j.list")
                 do
                     mkdir -p "${folder}/$k/images"
-                    cp ${PDF_DIR}/${folder}/$k/*.jpg $folder/$k/images/. 2>/dev/null
-                    cp ${PDF_DIR}/${folder}/$k/*.jpeg $folder/$k/images/. 2>/dev/null
-                    cp ${PDF_DIR}/${folder}/$k/*.gif $folder/$k/images/. 2>/dev/null
-                    cp ${PDF_DIR}/${folder}/$k/*.tif $folder/$k/images/. 2>/dev/null
-                    cp ${PDF_DIR}/${folder}/$k/*.png $folder/$k/images/. 2>/dev/null
+                    cp "${PDF_DIR}/${folder}/$k/*.jpg" "${folder}/$k/images/." 2>/dev/null
+                    cp "${PDF_DIR}/${folder}/$k/*.jpeg" "${folder}/$k/images/." 2>/dev/null
+                    cp "${PDF_DIR}/${folder}/$k/*.gif" "${folder}/$k/images/." 2>/dev/null
+                    cp "${PDF_DIR}/${folder}/$k/*.tif" "${folder}/$k/images/." 2>/dev/null
+                    cp "${PDF_DIR}/${folder}/$k/*.png" "${folder}/$k/images/." 2>/dev/null
                 done
             fi
-	done
-        ) &
-	wait
-	# gzip all tpcas files
-	find "${folder}" -name "*tpcas" -print0 | xargs -0 -n 8 -P 8 pigz 2>/dev/null
-	rm -f /tmp/"${folder}".*.list
+	      done
+      ) &
+      wait
     done
     rm ${LOCKFILE}
 fi
