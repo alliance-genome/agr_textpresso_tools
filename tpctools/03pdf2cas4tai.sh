@@ -105,25 +105,24 @@ else
       find "${folder}" -name "*tpcas" -print0 | xargs -0 -n 8 -P 8 pigz 2>/dev/null
       rm -f /tmp/"${folder}".*.list
       rm -f /tmp/"${folder}".*.processed
-
-      (
-        for ((j=0; j< ${N_PROC}; j++))
-        do
-            if [[ -f "/tmp/${folder}.$j.list" ]]
-            then
-                for k in $(cat "/tmp/${folder}.$j.list")
-                do
-                    mkdir -p "${folder}/$k/images"
-                    cp "${PDF_DIR}/${folder}/$k/*.jpg" "${folder}/$k/images/." 2>/dev/null
-                    cp "${PDF_DIR}/${folder}/$k/*.jpeg" "${folder}/$k/images/." 2>/dev/null
-                    cp "${PDF_DIR}/${folder}/$k/*.gif" "${folder}/$k/images/." 2>/dev/null
-                    cp "${PDF_DIR}/${folder}/$k/*.tif" "${folder}/$k/images/." 2>/dev/null
-                    cp "${PDF_DIR}/${folder}/$k/*.png" "${folder}/$k/images/." 2>/dev/null
-                done
-            fi
-	      done
-      ) &
-      wait
     done
+
+    PDF_DIR="${PDF_DIR%/}"
+    CAS1_DIR="${CAS1_DIR%/}"
+    find "${PDF_DIR}" -mindepth 2 -maxdepth 2 -type d -print0 |
+    xargs -0 -I {} -P "${N_PROC}" bash -c '
+    dir="{}"
+    # Extract the relative path
+    relative_dir="${dir#'"${PDF_DIR}/"'}"
+
+    # Create corresponding directory in destination
+    mkdir -p "'"${CAS1_DIR}"'/${relative_dir}/images"
+
+    # Copy images from source to destination
+    find "$dir" -maxdepth 2 -mindepth 2 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.gif" -o -iname "*.tif" -o -iname "*.png" \) | xargs -I [] cp "[]" "'"${CAS1_DIR}"'/${relative_dir}/images"
+    '
+
+    # Wait for all jobs to finish
+    wait
     rm ${LOCKFILE}
 fi
