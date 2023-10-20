@@ -195,7 +195,9 @@ else
 		if [[ -d "${CAS1_DIR}/${casfolder}/${dirname}" ]]
 		then
 		    tpcas_file_name=$(ls "${CAS1_DIR}/${casfolder}/${dirname}"/*.tpcas.gz | head -n1 | awk 'BEGIN{FS="/"}{print $NF}')
-		    ln -s -f "${CAS1_DIR}/${casfolder}/${dirname}/images" "${CAS2_DIR}/${casfolder}/${dirname}/."
+		    # ln -s -f "${CAS1_DIR}/${casfolder}/${dirname}/images" "${CAS2_DIR}/${casfolder}/${dirname}/."
+		    ## copying image files over from tpcas-1 folder to tpcas-2 folder instead of creating symbolic links
+		    cp -r "${CAS1_DIR}/${casfolder}/${dirname}/images" "${CAS2_DIR}/${casfolder}/${dirname}/."
 		    mv "$i" "${CAS2_DIR}/${casfolder}/${dirname}/${tpcas_file_name}"
 		fi
 	    done
