@@ -119,7 +119,7 @@ else
     mkdir -p "'"${CAS1_DIR}"'/${relative_dir}/images"
 
     # Copy images from source to destination
-    find "$dir" -maxdepth 2 -mindepth 2 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.gif" -o -iname "*.tif" -o -iname "*.png" \) | xargs -I [] cp "[]" "'"${CAS1_DIR}"'/${relative_dir}/images"
+    find "$dir" -maxdepth 1 -mindepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.gif" -o -iname "*.tif" -o -iname "*.png" \) | xargs -I [] cp "[]" "'"${CAS1_DIR}"'/${relative_dir}/images"
     '
 
     # Wait for all jobs to finish
