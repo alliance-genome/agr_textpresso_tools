@@ -71,7 +71,7 @@ def download_files(mod, raw_file_path=None, days_ago=None, start_reference_id=No
             ref_curie = x['reference_curie']
             reference_id = x['reference_id']
 
-            (md5sum, referencefile_id) = get_md5sum_reffile_id(mod, x['main_referencefiles'])
+            (md5sum, referencefile_id) = get_md5sum_and_id_of_best_reffile_to_download(mod, x['main_referencefiles'])
 
             logger.info(f"{count}: {reference_id} {ref_curie} {md5sum} {referencefile_id}")
 
@@ -125,21 +125,20 @@ def set_file_name(data_root_dir, ref_curie, suffix):
     return path.join(file_path, ref_curie + "." + suffix)
 
 
-def get_md5sum_reffile_id(mod, pdffiles):
-
-    # this logic is for mod = 'SGD'
-    # TODO: add logic for mod = 'WB' and other mods
+def get_md5sum_and_id_of_best_reffile_to_download(mod, pdffiles):
 
     md5sum = None
     referencefile_id = None
-    for x in sorted(pdffiles, key=lambda p: p['date_created']):        
+    prev_date_created = None
+    for x in sorted(pdffiles, key=lambda p: p['date_created']):
         if x['source_is_pmc']:
             md5sum = x['md5sum']
             referencefile_id = x['referencefile_id']
             break
-        md5sum = x['md5sum']
-        referencefile_id = x['referencefile_id']
-            
+        elif not md5sum or x['date_created'] > prev_date_created:
+            md5sum = x['md5sum']
+            referencefile_id = x['referencefile_id']
+            prev_date_created = x['date_created']
     return(md5sum, referencefile_id)
 
                     
