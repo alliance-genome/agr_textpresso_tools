@@ -20,7 +20,7 @@ echo -n "Total new PDF file(s): "
 find "${raw_file_dir}/pdf" -maxdepth 3 -name "*.pdf" | wc -l
 
 # convert pdf2txt
-convert_text "${raw_files_new}"
+convert_text "${raw_file_dir}"
 
 ## generating CAS-1 files
 
