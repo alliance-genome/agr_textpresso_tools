@@ -1,5 +1,5 @@
 from tpctools.utils import email_utils
-from os import environ
+from os import environ, path
 
 logfile = "/tmp/incremental_build.log"
 indexCountFile = "/data/textpresso/luceneindex_new/cc.cfg"
@@ -39,11 +39,15 @@ def compose_message():
             ref_curie = line.strip().split('/')[-1].split('.tpcas')[0]
             new_papers.append(ref_curie) 
     f.close()
-    
-    f = open(indexCountFile)
-    for line in f:
-        pieces = line.strip().split(' ')
-        total_indexed = pieces[-1]
+
+    if path.exists(indexCountFile):
+        f = open(indexCountFile)
+        for line in f:
+            pieces = line.strip().split(' ')
+            total_indexed = pieces[-1]
+    else:
+        total_indexed = total_cas2_count
+
     rows = ""
     for (label, count) in [('PDF downloaded', total_pdf_count),
                            ('CAS-1 files generated', total_cas1_count),

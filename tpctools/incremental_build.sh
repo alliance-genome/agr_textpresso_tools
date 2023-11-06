@@ -53,16 +53,19 @@ rsync -av "${raw_file_dir}/bib/" "${cas2_dir}/"
 
 echo "DONE transferring bib files over to tpcas-2 folder!"
 
-## indexing the new papers
-
-/data/textpresso/tpctools/incremental_index.sh -C ${cas2_dir}
-
-echo "DONE indexing!"
-
 # copy files to main dirs
 rsync -av "${raw_file_dir}/" "/data/textpresso/raw_files/"
 rsync -av "${cas1_dir}/" "/data/textpresso/tpcas-1/"
 rsync -av "${cas2_dir}/" "/data/textpresso/tpcas-2/"
+
+if [[ ${MOD} == 'WB' ]]; then
+   # indexing all papers to avoid duplicates
+   index
+else
+   # indexing the new papers only
+   /data/textpresso/tpctools/incremental_index.sh -C "${cas2_dir}"
+fi
+echo "DONE indexing!"
 
 conda run -n agr_textpresso python3 /data/textpresso/tpctools/send_report.py
 
