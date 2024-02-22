@@ -48,6 +48,7 @@ SHELL ["conda", "run", "-n", "agr_textpresso", "/bin/bash", "-c"]
 ADD requirements.txt requirements.txt
 RUN conda run -n agr_textpresso pip install -r requirements.txt
 
+RUN git clone https://github.com/TextpressoDevelopers/textpressoapi.git; cd textpressoapi; git checkout hmm; git pull --recurse-submodules; rm -rf cmake-build-release; mkdir cmake-build-release; cd cmake-build-release; cmake ..; make -j 8 ; make install #; rm -rf /textpressoapi
 
 # start cron
 RUN touch /var/log/cron.log && crontab /usr/local/etc/crontab

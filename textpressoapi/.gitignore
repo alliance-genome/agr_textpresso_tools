@@ -1,8 +1,0 @@
-cmake-build*
-.idea/
-**/build/
-**/dist/
-**/nbproject/
-**/_build
-*~
-*.db
