@@ -22,6 +22,9 @@ COPY start_textpresso.sh /root/start_textpresso.sh
 COPY lighttpd.conf /etc/lighttpd/lighttpd.conf
 COPY crontab /usr/local/etc/
 
+RUN git clone https://github.com/ipkn/crow.git
+RUN git clone https://github.com/SRombauts/SQLiteCpp.git; cd SQLiteCpp; git checkout 3.3.1; mkdir cmake-build-release; cd cmake-build-release; cmake ..; make -j 8; make install; rm -rf /SQLiteCpp
+
 # Precompile system
 COPY textpressocentral /data/textpresso/textpressocentral
 COPY textpressoapi /data/textpresso/textpressoapi
@@ -47,7 +50,6 @@ RUN conda env create -f conda_env.yml
 SHELL ["conda", "run", "-n", "agr_textpresso", "/bin/bash", "-c"]
 ADD requirements.txt requirements.txt
 RUN conda run -n agr_textpresso pip install -r requirements.txt
-
 
 # start cron
 RUN touch /var/log/cron.log && crontab /usr/local/etc/crontab

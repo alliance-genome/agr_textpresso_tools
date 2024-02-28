@@ -12,3 +12,4 @@ createdb "www-data"; zcat /usr/local/textpresso/etc/stopwords.postgres.tar.gz | 
 /root/initialize.sh -l &
 /root/initialize.sh -w
 /root/initialize.sh -i
+textpressoapi -d /data/textpressoapi_data/tokens.db > /data/textpressoapi_data/api.log
