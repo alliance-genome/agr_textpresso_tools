@@ -3,124 +3,134 @@ import json
 import time
 import argparse
 from os import rename
+
 from get_sgd_specific_categories import create_obo_file
-from tpctools.utils.okta_utils import (
-    get_authentication_token,
-    generate_headers
-)
+from okta_utils import get_authentication_token, generate_headers
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--mod', dest='mod', type=str, help='Mod to procoess', required=True)
-parser.add_argument('--page', dest='page_limit', type=str, help='Number of records retrieved at once. Defaults to 1000', required=False)
-parser.add_argument('--all', dest='download_all', action='store_true', help='Download all prebuild ontologies in addition to mod ontologies.', required=False)
-args = parser.parse_args()
+API_URL = "https://curation.alliancegenome.org/api/"
+PAGE_LIMIT = 1000
 
-if args.download_all:
-    urllib.request.urlretrieve("http://current.geneontology.org/ontology/go-basic.obo", "go-basic.obo")
-    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/doid.obo", "doid.obo")
-    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/chebi.obo", "chebi.obo")
-    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/so.obo", "so.obo")
-    urllib.request.urlretrieve("http://purl.obolibrary.org/obo/wbbt.obo", "wbbt.obo")
+def get_category_data(mod, download_all=False):
+    if download_all:
+        download_all_ontologies(mod)
 
+    id_prefix, species_name, filename_id = get_id_prefix_species_name(mod)
+    now = time.asctime()
+    token = get_authentication_token()
+    headers = generate_headers(token)
+    params = {
+        "searchFilters": {
+            "dataProviderFilter": {
+                "dataProvider.sourceOrganization.abbreviation": {
+                    "queryString": mod,
+                    "tokenOperator": "OR"
+                }
+            }
+        },
+        "sortOrders": [],
+        "aggregations": [],
+        "nonNullFieldsTable": []
+    }
 
-token = get_authentication_token()
-headers = generate_headers(token)
-mod = args.mod
-if args.page_limit is None:
-    page_limit = 1000
-else:
-    page_limit = args.page_limit
-current_page = 0
-records_printed = 0
-ateam_site = "beta-curation.alliancegenome.org"
-time = time.asctime()
+    if mod == 'MGI':
+        generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
+    elif mod == 'ZFIN':
+        generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
+        generate_entity_list_from_a_team(mod, 'allele', params, id_prefix, species_name, filename_id, now, token, headers)
+        generate_entity_list_from_a_team(mod, 'fish', params, id_prefix, species_name, filename_id, now, token, headers)
+    elif mod == 'SGD':
+        create_obo_file('tppsc', 'Protein', "protein_saccharomyces_cerevisiae.obo")
+        create_obo_file('tpssc', 'Strain', "strain_saccharomyces_cerevisiae.obo")
+        rename("allele_list_SGD.obo", "allele_saccharomyces_cerevisiae.obo")
+        rename("gene_list_SGD.obo", "gene_saccharomyces_cerevisiae.obo")
 
-if mod == 'SGD':
-    id_prefix = 'sc'
-    species_name = "S. cerevisiae"
-elif mod == 'WB':
-    id_prefix = 'ce'
-    species_name = "C. elegans"
-else:
-    print("Mod not found... current options for --mod are SGD or WB")
-    quit()
+def generate_entity_list_from_a_team(mod, entity_type, params, id_prefix, species_name, filename_id, now, token, headers):
+    if entity_type not in ["gene", "allele", "fish"]:
+        return
 
-params = {"searchFilters":{"dataProviderFilter":{"dataProvider.sourceOrganization.abbreviation":{"queryString":mod,"tokenOperator":"OR"}}},"sortOrders":[],"aggregations":[],"nonNullFieldsTable":[]}
+    entity_list_file = f"{entity_type}_{filename_id}.obo"
+    with open(entity_list_file, "w") as f:
+        entity_type_short = "agm" if entity_type == "fish" else entity_type
+        tp_root_id = f"tp{entity_type[0]}:0000000"
+        write_obo_file_header(f, tp_root_id, entity_type, species_name, now)
 
-##Gene List Generation
-f = open(f"gene_list_{mod}.obo", "w")
-f.write("format-version: 1.2\n")
-f.write(f"date: {time}\n")
-f.write("saved-by: Textpresso\n")
-f.write("auto-generated-by: get_categories.py\n\n")
+        current_page = 0
+        records_printed = 0
+        while True:
+            url = f"{API_URL}{entity_type_short}/search?limit={PAGE_LIMIT}&page={current_page}"
+            request_data_encoded = json.dumps(params).encode('utf-8')
+            request = urllib.request.Request(url, data=request_data_encoded)
+            request.add_header("Authorization", f"Bearer {token}")
+            request.add_header("Content-type", "application/json")
+            request.add_header("Accept", "application/json")
 
-f.write("[Term]\n")
-f.write(f"id: tpg{id_prefix}:0000000\n")
-f.write(f"name: Gene ({species_name})\n")
+            with urllib.request.urlopen(request) as response:
+                resp_obj = json.loads(response.read().decode("utf8"))
 
-while True:
-    url = f'https://alpha-curation.alliancegenome.org/api/gene/search?limit={page_limit}&page={current_page}'
-    request_body = params
-    request_data_encoded = json.dumps(request_body)
-    request_data_encoded_str = str(request_data_encoded)
-    request = urllib.request.Request(url=url, data=request_data_encoded_str.encode('utf-8'))
-    request.add_header("Authorization", f"Bearer {token}")
-    request.add_header("Content-type", "application/json")
-    request.add_header("Accept", "application/json")
-    with urllib.request.urlopen(request) as response:
-        resp = response.read().decode("utf8")
-        resp_obj = json.loads(resp)
-    if resp_obj['returnedRecords'] < 1:
-        break
-    for result in resp_obj['results']:
-        records_printed += 1
-        f.write(f"\n[Term]\nid: tpg{id_prefix}:{records_printed:07d}\nname: {result['geneSymbol']['formatText']}\nis_a: tpg{id_prefix}:0000000 ! Gene ({species_name})\n")
-    current_page += 1
-    print (f"Total Gene Records Printed {records_printed} of {resp_obj['totalResults']}")
-f.close()
+            if resp_obj['returnedRecords'] < 1:
+                break
 
-##Allele List Generation
-f = open(f"allele_list_{mod}.obo", "w")
-f.write("format-version: 1.2\n")
-f.write(f"date: {time}\n")
-f.write("saved-by: Textpresso\n")
-f.write("auto-generated-by: get_categories.py\n\n")
+            for result in resp_obj['results']:
+                entity_name = get_entity_name(entity_type, result)
+                if entity_name:
+                    records_printed += 1
+                    tp_id = f"tp{entity_type[0]}{id_prefix}:{records_printed:07d}"
+                    f.write(f"\n[Term]\nid: {tp_id}\nname: {entity_name}\nis_a: {tp_root_id} ! {entity_type.capitalize()} ({species_name})\n")
 
-f.write("[Term]\n")
-f.write(f"id: tpa{id_prefix}:0000000\n")
-f.write(f"name: Allele ({species_name})\n")
-current_page = 0
-records_printed = 0
+            current_page += 1
+            print(f"Total {entity_type.capitalize()} Records Printed {records_printed} of {resp_obj['totalResults']}")
 
-while True:
-    url = f'https://alpha-curation.alliancegenome.org/api/allele/search?limit={page_limit}&page={current_page}'
-    request_body = params
-    request_data_encoded = json.dumps(request_body)
-    request_data_encoded_str = str(request_data_encoded)
-    request = urllib.request.Request(url=url, data=request_data_encoded_str.encode('utf-8'))
-    request.add_header("Authorization", f"Bearer {token}")
-    request.add_header("Content-type", "application/json")
-    request.add_header("Accept", "application/json")
-    with urllib.request.urlopen(request) as response:
-        resp = response.read().decode("utf8")
-        resp_obj = json.loads(resp)
-    if resp_obj['returnedRecords'] < 1:
-        break
-    for result in resp_obj['results']:
-        if 'alleleSymbol' in result:
-            records_printed += 1
-            f.write(f"\n[Term]\nid: tpa{id_prefix}:{records_printed:07d}\nname: {result['alleleSymbol']['formatText']}\nis_a: tpa{id_prefix}:0000000 ! Allele ({species_name})\n")
-        else:
-            print('Skipping entry...')
-            print(result)
-    current_page += 1
-    print(f"Total Allele Records Printed {records_printed} of {resp_obj['totalResults']}")
-f.close()
+def get_entity_name(entity_type, result):
+    if entity_type == 'gene':
+        return result['geneSymbol']['formatText']
+    elif entity_type == 'allele':
+        return result['alleleSymbol']['formatText']
+    elif entity_type == 'fish':
+        if result['subtype']['name'] != 'fish':
+            return None
+        return result['name']
 
-if mod == 'SGD':
-    create_obo_file('tppsc', 'Protein',
-                    "protein_saccharomyces_cerevisiae.obo")
-    create_obo_file('tpssc', 'Strain',
-                    "strain_saccharomyces_cerevisiae.obo")
-    rename("allele_list_SGD.obo", "allele_saccharomyces_cerevisiae.obo")
-    rename("gene_list_SGD.obo", "gene_saccharomyces_cerevisiae.obo")
+def write_obo_file_header(f, tp_root_id, entity_type, species_name, now):
+    f.write("format-version: 1.2\n")
+    f.write(f"date: {now}\n")
+    f.write("saved-by: Textpresso\n")
+    f.write("auto-generated-by: get_categories.py\n\n")
+    f.write("[Term]\n")
+    f.write(f"id: {tp_root_id}\n")
+    f.write(f"name: {entity_type.capitalize()} ({species_name})\n")
+
+def download_all_ontologies(mod):
+    urllib.request.urlretrieve("https://current.geneontology.org/ontology/go-basic.obo", "go.obo")
+    urllib.request.urlretrieve("https://purl.obolibrary.org/obo/doid.obo", "doid.obo")
+    urllib.request.urlretrieve("https://purl.obolibrary.org/obo/chebi.obo", "chebi.obo")
+    urllib.request.urlretrieve("https://purl.obolibrary.org/obo/so.obo", "so.obo")
+
+    if mod == 'WB':
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/wbbt.obo", "wbbt.obo")
+    elif mod == 'ZFIN':
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/zfa.obo", "zfa.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/cl.obo", "cl.obo")
+    elif mod == 'MGI':
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/emapa.obo", "emapa.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/ma.obo", "ma.obo")
+
+def get_id_prefix_species_name(mod):
+    mod_info = {
+        'SGD': ("sc", "S. cerevisiae", "saccharomyces_cerevisiae"),
+        'WB': ("ce", "C. elegans", "caenorhabditis_elegans"),
+        'MGI': ("mm", "M. musculus", "mus_musculus"),
+        'ZFIN': ("dr", "D. rerio", "danio_rerio"),
+        'FB': ("dm", "D. melanogaster", "drosophila_melanogaster"),
+        'RGD': ("rn", "R. norvegicus", "rattus_norvegicus"),
+        'XB': ("xl", "X. laevis", "xenopus_laevis")
+    }
+    return mod_info.get(mod, ("", "", ""))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--mod', action='store', type=str, help='MOD to dump',
+                        choices=['SGD', 'WB', 'FB', 'ZFIN', 'MGI', 'RGD', 'XB'], required=True)
+    parser.add_argument('-a', '--all', action='store_true', help="download all ontologies")
+    args = parser.parse_args()
+    get_category_data(args.mod, args.all)
+    
