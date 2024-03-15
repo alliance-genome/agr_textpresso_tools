@@ -1,11 +1,12 @@
 import urllib.request
 import json
 import time
+from datetime import datetime 
 import argparse
 from os import rename
 
 from get_sgd_specific_categories import create_obo_file
-from okta_utils import get_authentication_token, generate_headers
+from tpctools.utils.okta_utils import get_authentication_token, generate_headers
 
 API_URL = "https://curation.alliancegenome.org/api/"
 PAGE_LIMIT = 1000
@@ -32,25 +33,36 @@ def get_category_data(mod, download_all=False):
         "nonNullFieldsTable": []
     }
 
-    if mod == 'MGI':
+    if mod == 'WB':
+        # ~3 min
+        generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
+        # ~3 min
+        generate_entity_list_from_a_team(mod, 'protein', params, id_prefix, species_name, filename_id, now, token, headers)
+        # 2 hrs + ~45 min
+        generate_entity_list_from_a_team(mod, 'allele', params, id_prefix, species_name, filename_id, now, token, headers)
+    elif mod == 'MGI':
         generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
     elif mod == 'ZFIN':
         generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
         generate_entity_list_from_a_team(mod, 'allele', params, id_prefix, species_name, filename_id, now, token, headers)
         generate_entity_list_from_a_team(mod, 'fish', params, id_prefix, species_name, filename_id, now, token, headers)
     elif mod == 'SGD':
+        generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
+        generate_entity_list_from_a_team(mod, 'allele', params, id_prefix, species_name, filename_id, now, token, headers)
         create_obo_file('tppsc', 'Protein', "protein_saccharomyces_cerevisiae.obo")
         create_obo_file('tpssc', 'Strain', "strain_saccharomyces_cerevisiae.obo")
-        rename("allele_list_SGD.obo", "allele_saccharomyces_cerevisiae.obo")
-        rename("gene_list_SGD.obo", "gene_saccharomyces_cerevisiae.obo")
+
 
 def generate_entity_list_from_a_team(mod, entity_type, params, id_prefix, species_name, filename_id, now, token, headers):
-    if entity_type not in ["gene", "allele", "fish"]:
+    if entity_type not in ["gene", "allele", "fish", "protein"]:
         return
 
+    if entity_type == "protein" and mod != "WB":
+        return
+         
     entity_list_file = f"{entity_type}_{filename_id}.obo"
     with open(entity_list_file, "w") as f:
-        entity_type_short = "agm" if entity_type == "fish" else entity_type
+        entity_type_short = "agm" if entity_type == "fish" else "gene" if entity_type == "protein" else entity_type
         tp_root_id = f"tp{entity_type[0]}:0000000"
         write_obo_file_header(f, tp_root_id, entity_type, species_name, now)
 
@@ -71,7 +83,7 @@ def generate_entity_list_from_a_team(mod, entity_type, params, id_prefix, specie
                 break
 
             for result in resp_obj['results']:
-                entity_name = get_entity_name(entity_type, result)
+                entity_name = get_entity_name(entity_type, result, mod)
                 if entity_name:
                     records_printed += 1
                     tp_id = f"tp{entity_type[0]}{id_prefix}:{records_printed:07d}"
@@ -80,15 +92,24 @@ def generate_entity_list_from_a_team(mod, entity_type, params, id_prefix, specie
             current_page += 1
             print(f"Total {entity_type.capitalize()} Records Printed {records_printed} of {resp_obj['totalResults']}")
 
-def get_entity_name(entity_type, result):
+
+def get_entity_name(entity_type, result, mod=None):
     if entity_type == 'gene':
-        return result['geneSymbol']['formatText']
+        gene_name = result['geneSymbol']['formatText']
+        if mod and mod == 'WB':
+            return gene_name.lower()
+        return gene_name
+    elif entity_type == 'protein':
+        ## currently just for WB
+        gene_name = result['geneSymbol']['formatText']
+        return gene_name.upper()
     elif entity_type == 'allele':
         return result['alleleSymbol']['formatText']
     elif entity_type == 'fish':
         if result['subtype']['name'] != 'fish':
             return None
         return result['name']
+
 
 def write_obo_file_header(f, tp_root_id, entity_type, species_name, now):
     f.write("format-version: 1.2\n")
@@ -107,6 +128,9 @@ def download_all_ontologies(mod):
 
     if mod == 'WB':
         urllib.request.urlretrieve("https://purl.obolibrary.org/obo/wbbt.obo", "wbbt.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/wbls.obo", "wbls.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/pato.obo", "pato.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/wbphenotype.obo", "wbphenotype.obo")
     elif mod == 'ZFIN':
         urllib.request.urlretrieve("https://purl.obolibrary.org/obo/zfa.obo", "zfa.obo")
         urllib.request.urlretrieve("https://purl.obolibrary.org/obo/cl.obo", "cl.obo")
