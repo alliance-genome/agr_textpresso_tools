@@ -63,7 +63,7 @@ def generate_entity_list_from_a_team(mod, entity_type, params, id_prefix, specie
     entity_list_file = f"{entity_type}_{filename_id}.obo"
     with open(entity_list_file, "w") as f:
         entity_type_short = "agm" if entity_type == "fish" else "gene" if entity_type == "protein" else entity_type
-        tp_root_id = f"tp{entity_type[0]}:0000000"
+        tp_root_id = f"tp{entity_type[0]}{id_prefix}:0000000"
         write_obo_file_header(f, tp_root_id, entity_type, species_name, now)
 
         current_page = 0
