@@ -1,5 +1,9 @@
 SHELL=/bin/bash
 BASH_ENV=/container.env
 
-0 18 * * 7 /bin/bash /data/textpresso/tpctools/incremental_build.sh >& /tmp/incremental_build.log &
+0 19 * * 7 /bin/bash /data/textpresso/tpctools/incremental_build.sh >& /tmp/incremental_build.log &
+
+# running for the first Monday of every month
+0 0 */100,1-7 * * /bin/bash /data/textpresso/tpctools/update_ontology.sh >& /tmp/update_ontology.log &
+
 

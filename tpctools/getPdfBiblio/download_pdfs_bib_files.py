@@ -164,6 +164,10 @@ def get_organism_name_by_mod(mod):
         return 'S. cerevisiae'
     if mod == 'WB':
         return 'C. elegans'
+    if mod == 'MGI':
+        return 'M. musculus'
+    if mod == 'ZFIN':
+        return 'D. rerio'
     ## add more mods here
 
 

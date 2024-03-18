@@ -1,17 +1,18 @@
 from tpctools.utils import email_utils
 from os import environ, path
+import sys
 
 logfile = "/tmp/incremental_build.log"
 indexCountFile = "/data/textpresso/luceneindex_new/cc.cfg"
 
 
-def send_report():
+def send_report(email_subject=None, email_message=None):
 
-    MOD = environ['MOD']
-    email_subject = f"{MOD} Textpresso Incremental Build Report"
-
-    email_message = compose_message()
-
+    if email_subject is None:
+        MOD = environ.get('MOD', 'Unknown')
+        email_subject = f"{MOD} Textpresso Incremental Build Report"
+    if email_message is None:
+        email_message = compose_message()
     email_utils.send_report(email_subject, email_message)
 
 def compose_message():
@@ -64,5 +65,6 @@ def compose_message():
 
 
 if __name__ == "__main__":
-    
-    send_report()
+    subject = sys.argv[1] if len(sys.argv) > 1 else None
+    message = sys.argv[2] if len(sys.argv) > 2 else None
+    send_report(subject, message)
