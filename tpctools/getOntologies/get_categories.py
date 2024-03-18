@@ -88,7 +88,14 @@ def generate_entity_list_from_a_team(mod, entity_type, params, id_prefix, specie
                     records_printed += 1
                     tp_id = f"tp{entity_type[0]}{id_prefix}:{records_printed:07d}"
                     f.write(f"\n[Term]\nid: {tp_id}\nname: {entity_name}\nis_a: {tp_root_id} ! {entity_type.capitalize()} ({species_name})\n")
-
+                if entity_type in ["gene", "allele"]:
+                    synonymField = f"{entity_type}Synonyms"
+                    if synonymField in result:
+                        for s in result[synonymField]:
+                            records_printed += 1
+                            alias_name = s["displayText"]
+                            tp_id = f"tp{entity_type[0]}{id_prefix}:{records_printed:07d}"
+                            f.write(f"\n[Term]\nid: {tp_id}\nname: {alias_name}\nis_a: {tp_root_id} ! {entity_type.capitalize()} ({species_name})\n")                            
             current_page += 1
             print(f"Total {entity_type.capitalize()} Records Printed {records_printed} of {resp_obj['totalResults']}")
 
