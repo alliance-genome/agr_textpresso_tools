@@ -22,10 +22,10 @@ if ! annotate -P 2; then
     send_report "${MOD} Textpresso CAS-2 Files Generation" "Failed to generate CAS-2 files."
 fi
 
-echo "Transferring bib files over to tpcas-2 folder..."
-if ! rsync -av /data/textpresso/raw_files/bib/ /data/textpresso/tpcas-2/; then
-    send_report "${MOD} Textpresso Rsyncing Bib Files" "Failed to transfer bib files over to tpcas-2 folder."
-fi
+# echo "Transferring bib files over to tpcas-2 folder..."
+# if ! rsync -av /data/textpresso/raw_files/bib/ /data/textpresso/tpcas-2/; then
+#    send_report "${MOD} Textpresso Rsyncing Bib Files" "Failed to transfer bib files over to tpcas-2 folder."
+# fi
 
 echo "Indexing papers..."
 if ! index; then
