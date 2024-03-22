@@ -34,10 +34,10 @@ def get_category_data(mod, download_all=False):
     }
 
     if mod == 'WB':
-        # ~3 min
         generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
-        # ~3 min
+        generate_entity_list_from_a_team(mod, 'gene_synonym', params, 's' + id_prefix, species_name, filename_id, now, token, headers)
         generate_entity_list_from_a_team(mod, 'protein', params, id_prefix, species_name, filename_id, now, token, headers)
+        generate_entity_list_from_a_team(mod, 'protein_synonym', params, 's' + id_prefix, species_name, filename_id, now, token, headers)
         # 2 hrs + ~45 min
         generate_entity_list_from_a_team(mod, 'allele', params, id_prefix, species_name, filename_id, now, token, headers)
     elif mod == 'MGI':
@@ -54,17 +54,20 @@ def get_category_data(mod, download_all=False):
 
 
 def generate_entity_list_from_a_team(mod, entity_type, params, id_prefix, species_name, filename_id, now, token, headers):
-    if entity_type not in ["gene", "allele", "fish", "protein"]:
+    if entity_type not in ["gene", "allele", "fish", "protein", "gene_synonym", "protein_synonym"]:
         return
 
-    if entity_type == "protein" and mod != "WB":
+    if entity_type.startswith("protein") and mod != "WB":
         return
-         
+    found_synonyms = set()
     entity_list_file = f"{entity_type}_{filename_id}.obo"
     with open(entity_list_file, "w") as f:
-        entity_type_short = "agm" if entity_type == "fish" else "gene" if entity_type == "protein" else entity_type
+        entity_type_short = entity_type.split('_')[0]
+        entity_type_short = "agm" if entity_type_short == "fish" else "gene" if entity_type_short == "protein" else entity_type_short
         tp_root_id = f"tp{entity_type[0]}{id_prefix}:0000000"
-        write_obo_file_header(f, tp_root_id, entity_type, species_name, now)
+        root_name = entity_type.capitalize()
+        root_name = root_name.replace("_synonym", " Synonym")
+        write_obo_file_header(f, tp_root_id, root_name, species_name, now)
 
         current_page = 0
         records_printed = 0
@@ -85,17 +88,28 @@ def generate_entity_list_from_a_team(mod, entity_type, params, id_prefix, specie
             for result in resp_obj['results']:
                 entity_name = get_entity_name(entity_type, result, mod)
                 if entity_name:
-                    records_printed += 1
-                    tp_id = f"tp{entity_type[0]}{id_prefix}:{records_printed:07d}"
-                    f.write(f"\n[Term]\nid: {tp_id}\nname: {entity_name}\nis_a: {tp_root_id} ! {entity_type.capitalize()} ({species_name})\n")
-                if entity_type in ["gene", "allele"]:
-                    synonymField = f"{entity_type}Synonyms"
-                    if synonymField in result:
-                        for s in result[synonymField]:
-                            records_printed += 1
-                            alias_name = s["displayText"]
-                            tp_id = f"tp{entity_type[0]}{id_prefix}:{records_printed:07d}"
-                            f.write(f"\n[Term]\nid: {tp_id}\nname: {alias_name}\nis_a: {tp_root_id} ! {entity_type.capitalize()} ({species_name})\n")                            
+                    if mod != 'WB' or not entity_type.endswith("_synonym"):
+                        records_printed += 1
+                        tp_id = f"tp{entity_type[0]}{id_prefix}:{records_printed:07d}"
+                        f.write(f"\n[Term]\nid: {tp_id}\nname: {entity_name}\nis_a: {tp_root_id} ! {root_name} ({species_name})\n")
+                    
+                if entity_type_short in ["gene", "allele"]:
+                    if mod != 'WB' or entity_type.endswith("_synonym"):
+                        synonymField = f"{entity_type_short}Synonyms"
+                        if synonymField in result:
+                            for s in result[synonymField]:
+                                alias_name = s["displayText"]
+                                if alias_name in found_synonyms:
+                                    continue
+                                found_synonyms.add(alias_name)
+                                records_printed += 1
+                                tp_id = f"tp{entity_type[0]}{id_prefix}:{records_printed:07d}"
+                                if mod == "WB":
+                                    if entity_type.startswith("protein"):
+                                        alias_name = alias_name.upper()
+                                    elif entity_type.startswith("gene"):
+                                        alias_name = alias_name.lower()
+                                f.write(f"\n[Term]\nid: {tp_id}\nname: {alias_name}\nis_a: {tp_root_id} ! {root_name} ({species_name})\n")                            
             current_page += 1
             print(f"Total {entity_type.capitalize()} Records Printed {records_printed} of {resp_obj['totalResults']}")
 
@@ -118,14 +132,14 @@ def get_entity_name(entity_type, result, mod=None):
         return result['name']
 
 
-def write_obo_file_header(f, tp_root_id, entity_type, species_name, now):
+def write_obo_file_header(f, tp_root_id, root_name, species_name, now):
     f.write("format-version: 1.2\n")
     f.write(f"date: {now}\n")
     f.write("saved-by: Textpresso\n")
     f.write("auto-generated-by: get_categories.py\n\n")
     f.write("[Term]\n")
     f.write(f"id: {tp_root_id}\n")
-    f.write(f"name: {entity_type.capitalize()} ({species_name})\n")
+    f.write(f"name: {root_name} ({species_name})\n")
 
 def download_all_ontologies(mod):
     urllib.request.urlretrieve("https://current.geneontology.org/ontology/go-basic.obo", "go.obo")
