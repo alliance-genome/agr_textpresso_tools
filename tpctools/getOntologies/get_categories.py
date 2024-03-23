@@ -46,6 +46,8 @@ def get_category_data(mod, download_all=False):
         generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
         generate_entity_list_from_a_team(mod, 'allele', params, id_prefix, species_name, filename_id, now, token, headers)
         generate_entity_list_from_a_team(mod, 'fish', params, id_prefix, species_name, filename_id, now, token, headers)
+    elif mod == 'FB':
+        generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
     elif mod == 'SGD':
         generate_entity_list_from_a_team(mod, 'gene', params, id_prefix, species_name, filename_id, now, token, headers)
         generate_entity_list_from_a_team(mod, 'allele', params, id_prefix, species_name, filename_id, now, token, headers)
@@ -158,6 +160,11 @@ def download_all_ontologies(mod):
     elif mod == 'MGI':
         urllib.request.urlretrieve("https://purl.obolibrary.org/obo/emapa.obo", "emapa.obo")
         urllib.request.urlretrieve("https://purl.obolibrary.org/obo/ma.obo", "ma.obo")
+    elif mod == 'FB':
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fly_anatomy.obo", "fly_anatomy.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fbdv-simple.obo", "fbdv-simple.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fbcv-simple.obo", "fbcv-simple.obo")
+
 
 def get_id_prefix_species_name(mod):
     mod_info = {
