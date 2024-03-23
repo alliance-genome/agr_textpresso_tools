@@ -168,7 +168,8 @@ def get_organism_name_by_mod(mod):
         return 'M. musculus'
     if mod == 'ZFIN':
         return 'D. rerio'
-    ## add more mods here
+    if mod == 'FB':
+        return 'D. melanogaster'
 
 
 if __name__ == "__main__":
