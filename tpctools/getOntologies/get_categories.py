@@ -161,9 +161,9 @@ def download_all_ontologies(mod):
         urllib.request.urlretrieve("https://purl.obolibrary.org/obo/emapa.obo", "emapa.obo")
         urllib.request.urlretrieve("https://purl.obolibrary.org/obo/ma.obo", "ma.obo")
     elif mod == 'FB':
-        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fly_anatomy.obo", "fly_anatomy.obo")
-        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fbdv-simple.obo", "fbdv-simple.obo")
-        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fbcv-simple.obo", "fbcv-simple.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fbbt/fly_anatomy.obo", "fly_anatomy.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fbdv/fbdv-simple.obo", "fbdv-simple.obo")
+        urllib.request.urlretrieve("https://purl.obolibrary.org/obo/fbcv/fbcv-simple.obo", "fbcv-simple.obo")
 
 
 def get_id_prefix_species_name(mod):
