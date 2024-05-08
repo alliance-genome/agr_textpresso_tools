@@ -3,7 +3,6 @@ BASH_ENV=/container.env
 
 0 19 * * 7 /bin/bash /data/textpresso/tpctools/incremental_build.sh >& /tmp/incremental_build.log &
 
-# running for the first Monday of every month
-0 0 */100,1-7 * * /bin/bash /data/textpresso/tpctools/update_ontology.sh >& /tmp/update_ontology.log &
-
-
+# set to run on Tuesday, but check_and_run_ontology_update.sh will
+# only run update_ontology.sh on the first Tuesday of each month
+0 0 * * 2 /bin/bash /data/textpresso/tpctools/check_and_run_ontology_update.sh >& /tmp/check_and_run_ontology_update.log &
