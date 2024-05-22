@@ -263,6 +263,7 @@ def write_obo_file_header(f, tp_root_id, root_name, species_name, now):
     f.write(f"name: {root_name} ({species_name})\n")
 
 def download_all_ontologies(mod, id_prefix):
+
     urllib.request.urlretrieve("https://current.geneontology.org/ontology/go-basic.obo", "go.obo_old")
     urllib.request.urlretrieve("https://purl.obolibrary.org/obo/doid.obo", "doid.obo_old")
     urllib.request.urlretrieve("https://purl.obolibrary.org/obo/chebi.obo", "chebi.obo_old")
@@ -341,10 +342,10 @@ def remove_obsolete_terms(input_file_path, output_file_path):
 def generate_flattened_ontology_file(obo_file, id_prefix):
 
     ontology_details = {
-        'go': ("Gene Ontology Flattened", f"tpgf{id_prefix}:0000000"),
-        'so': ("Sequence Ontology Flattened", f"tpsf{id_prefix}:0000000"),
-        'doid': ("Disease Ontology Flattened", f"tpdf{id_prefix}:0000000"),
-        'chebi': ("ChEBI Ontology Flattened", f"tpcf{id_prefix}:0000000")
+        'go': ("Gene Ontology (flattened, fast loading)", f"tpgf{id_prefix}:0000000"),
+        'so': ("Sequence Ontology (flattened, fast loading)", f"tpsf{id_prefix}:0000000"),
+        'doid': ("Disease Ontology (flattened, fast loading)", f"tpdf{id_prefix}:0000000"),
+        'chebi': ("ChEBI Ontology (flattened, fast loading)", f"tpcf{id_prefix}:0000000")
     }
 
     file_prefix = obo_file.split('.')[0]
@@ -355,18 +356,22 @@ def generate_flattened_ontology_file(obo_file, id_prefix):
 
     flattened_file = f"{file_prefix}_flattened.obo"
 
+    termType = None
     with open(obo_file, 'r') as f, open(flattened_file, 'w') as fw:
         for count, line in enumerate(f, start=1):
             if count < 5:
                 fw.write(line)
-            if count == 5:
-                fw.write(f"\n[Term]\nid: {root_id}\nname: {root_term}\n")  
-            elif line.strip() == '':
-                fw.write(line)
-            elif line.startswith("[Term]") or line.startswith("id:") or line.startswith("name:"):
-                fw.write(line)
-                if line.startswith("name:"):
-                    fw.write(f"is_a: {root_id} ! {root_term}\n")
+            elif count == 5:
+                fw.write(f"\n[Term]\nid: {root_id}\nname: {root_term}\n\n")
+            if line.strip().startswith("[") and line.strip().endswith("]"):
+                termType = line.strip()
+            for text in ["[Term]", "id: ", "name: ", "def: ", "synonym: ", "xref: "]:
+                if line.startswith(text):
+                    fw.write(line)
+            if count > 5 and line.strip() == '' and termType == "[Term]":
+                fw.write(f"is_a: {root_id} ! {root_term}\n\n")
+            if line.startswith("[Typedef]"):
+                break
 
     print(f"Flattened file created: {flattened_file}")
 
