@@ -19,24 +19,23 @@ conda run -n agr_textpresso python3 /data/textpresso/tpctools/getPdfBiblio/downl
 
 echo "DONE downloading PDFs and generating bib files!"
 
-echo -n "Total new PDF file(s): "
-find "${raw_file_dir}/pdf" -maxdepth 3 -name "*.pdf" | wc -l
-
 # Count the total number of PDF files in raw_file_dir
 total_pdfs=$(find "${raw_file_dir}/pdf" -maxdepth 3 -name "*.pdf" | wc -l)
 
+echo "Total new PDF file(s): ${total_pdfs}"
+
 # Check if the total number of PDFs is less than 10
-if [ "$total_pdfs" -lt 10 ]; then
+if [ "$total_pdfs" -lt 5 ]; then
     # Move raw_file_dir to raw_file_past_week_dir and exit
     # wait for next week to process them
     mv "${raw_file_dir}"/* "${raw_file_past_week_dir}/"
-    echo "Less than 10 PDFs found. Moved files to raw_file_past_week_dir and exiting."
+    echo "Less than 5 PDFs found. Moved files to raw_file_past_week_dir and exiting."
     rm -rf "${raw_file_dir}"
     exit 0
 else
     # Remove all files in raw_file_past_week_dir
     rm -r "${raw_file_past_week_dir}"/*
-    echo "10 or more PDFs found. Cleared raw_file_past_week_dir."
+    echo "5 or more PDFs found. Cleared raw_file_past_week_dir."
 fi
 
 # convert pdf2txt
