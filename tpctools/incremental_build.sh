@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 raw_file_dir="/data/textpresso/raw_files_new"
+raw_file_past_week_dir="/data/textpresso/raw_files_past_week"
 cas1_dir="/data/textpresso/tpcas-1_new"
 cas2_dir="/data/textpresso/tpcas-2_new"
 index_dir="/data/textpresso/luceneindex_new"
@@ -12,12 +13,31 @@ rm -rf "${index_dir}"
 
 ## downloading pdfs and generating bib files
 
+mv "${raw_file_past_week_dir}"/* "${raw_file_dir}/"
+
 conda run -n agr_textpresso python3 /data/textpresso/tpctools/getPdfBiblio/download_pdfs_bib_files.py -m "${MOD}" -d 6 -p "${raw_file_dir}"
 
 echo "DONE downloading PDFs and generating bib files!"
 
 echo -n "Total new PDF file(s): "
 find "${raw_file_dir}/pdf" -maxdepth 3 -name "*.pdf" | wc -l
+
+# Count the total number of PDF files in raw_file_dir
+total_pdfs=$(find "${raw_file_dir}/pdf" -maxdepth 3 -name "*.pdf" | wc -l)
+
+# Check if the total number of PDFs is less than 10
+if [ "$total_pdfs" -lt 10 ]; then
+    # Move raw_file_dir to raw_file_past_week_dir and exit
+    # wait for next week to process them
+    mv "${raw_file_dir}"/* "${raw_file_past_week_dir}/"
+    echo "Less than 10 PDFs found. Moved files to raw_file_past_week_dir and exiting."
+    rm -rf "${raw_file_dir}"
+    exit 0
+else
+    # Remove all files in raw_file_past_week_dir
+    rm -r "${raw_file_past_week_dir}"/*
+    echo "10 or more PDFs found. Cleared raw_file_past_week_dir."
+fi
 
 # convert pdf2txt
 convert_text "${raw_file_dir}"
