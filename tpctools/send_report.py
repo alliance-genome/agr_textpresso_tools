@@ -41,6 +41,7 @@ def compose_message():
             new_papers.append(ref_curie) 
     f.close()
 
+    
     if path.exists(indexCountFile):
         f = open(indexCountFile)
         for line in f:
@@ -56,7 +57,8 @@ def compose_message():
                            ('CAS-2 files generated', total_cas2_count),
                            ('Empty CAS-2 files', empty_cas2_files),
                            ('New Papers added into index', total_indexed)]:
-        rows = rows + f"<tr><th style='text-align:left' width='300'>{label}</th><td width='100'>{count}</td></tr>"
+        if str(count).isdigit():
+            rows = rows + f"<tr><th style='text-align:left' width='300'>{label}</th><td width='100'>{count}</td></tr>"
     email_message = "<table></tbody>" + rows + "</tbody></table>"
     email_message = email_message + "<p>The logfile is available at /tmp/incremental_build.log</p>"
     email_message = email_message + "<p>The full-text files for the following papers have just been added to Textpresso."
