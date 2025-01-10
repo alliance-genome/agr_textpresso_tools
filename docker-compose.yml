@@ -31,3 +31,15 @@ services:
       ports:
         - "${TPC_UI_PORT}:80"
         - "${TPC_API_PORT}:18080"
+
+  reverse_proxy:
+    build:
+      context: .
+      dockerfile: reverse_proxy/Dockerfile
+    restart: unless-stopped
+    container_name: reverse_proxy
+    networks:
+      - caltech-curation-network
+    hostname: reverse_proxy
+    ports:
+      - "80:80"
