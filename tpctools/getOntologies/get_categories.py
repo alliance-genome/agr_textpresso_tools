@@ -26,7 +26,7 @@ def get_category_data(mod, download_all=False):
     params = {
         "searchFilters": {
             "dataProviderFilter": {
-                "dataProvider.sourceOrganization.abbreviation": {
+                "dataProvider.abbreviation": {
                     "queryString": mod,
                     "tokenOperator": "OR"
                 }
